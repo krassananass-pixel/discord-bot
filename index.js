@@ -30,4 +30,28 @@ client.on('messageCreate', (message) => {
   }
 });
 
-client.login(process.env.TOKEN);
+
+function checkSleepTime() {
+  const now = new Date();
+
+  // UTC +2 = deutsche Zeit (Sommerzeit)
+  const hour = now.getUTCHours() + 2;
+  const minutes = now.getUTCMinutes();
+
+  const inSleepWindow =
+    (hour > 0 && hour < 8) || (hour === 0 && minutes >= 40);
+
+  if (inSleepWindow) {
+    console.log('🛌 Sleep-Zeit: Bot fährt herunter');
+    client.destroy(); // trennt den Bot
+  } else if (!client.isReady()) {
+    console.log('☀️ Wake-Up-Zeit: Bot startet wieder');
+    client.login(process.env.TOKEN);
+  }
+}
+
+// checke alle 5 Minuten
+setInterval(checkSleepTime, 5 * 60 * 1000);
+
+// erster Start:
+checkSleepTime();
